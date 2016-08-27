@@ -39,11 +39,12 @@
 #define BOBLIGHT_MAILBOX_DECR	50		/**< Amount of entries that are removed by one step */
 #define BOBLIGHT_MAILBOX_DECR_BORDER 100 /**< When Mailbox increased this amount,  BOBLIGHT_MAILBOX_DECR is used for decrementing */
 
-#define LOGGING_FACTOR		10
+#define LOGGING_FACTOR		2
 
-#define NO_CHANGE_FACGOR	1.0f
-#define FACTOR_DECREASE_STEP	0.001f
-#define FACTOR_MINIMUM		0.33f
+/** Constants for the dynamic dimming */
+#define NO_CHANGE_FACTOR	1000	/**< No change, so it is set to 1000 promill */
+#define FACTOR_DECREASE_STEP	1	/**< Decrease the amount in each cycle by 1 promill */
+#define FACTOR_MINIMUM		330	/**< As one color can be easily at full brightness, 330 promill is the minimum */
 
 /******************************************************************************
  * LOCAL VARIABLES for this module
@@ -55,7 +56,12 @@ static int ledOffset = 0;
 static int startFound = FALSE;
 
 static int colorPosition=0;
-static float dynamicColorFactor=0;
+static int dynamicColorFactor=0;
+/** DEBUG */
+static uint32_t meanSum = 0;
+static uint32_t meanRed = 0;
+static uint32_t meanGreen = 0;
+static uint32_t meanBlue = 0;
 
 uint32_t*	gBoblightMailboxBuffer = NULL;
 Mailbox *	gBoblightMailbox = NULL;
@@ -67,9 +73,9 @@ Mailbox *	gBoblightMailbox = NULL;
 /** Secure, that the leds are not oo bright for a long time */
 static void calculateDynamicDim( void )
 {
-	long sumRed=0;
-	long sumGreen=0;
-	long sumBlue=0;
+	uint32_t sumRed=0;
+	uint32_t sumGreen=0;
+	uint32_t sumBlue=0;
 	int i;
 	for(i=0; i < ledOffset; i++)
 	{
@@ -79,11 +85,11 @@ static void calculateDynamicDim( void )
 	}
 	
 	/* Get the mean brighntess per color */
-	int meanRed = (int) (sumRed / ledOffset);
-	int meanGreen = (int) (sumGreen / ledOffset);
-	int meanBlue = (int) (sumBlue / ledOffset);
-
-	if ( (meanRed + meanGreen + meanBlue ) > LEDSTRIPE_COLOR_MAXVALUE)
+	meanRed =   (sumRed / ledOffset);
+	meanGreen = (sumGreen / ledOffset);
+	meanBlue =  (sumBlue / ledOffset);
+	meanSum = (meanRed + meanGreen + meanBlue);
+	if (meanSum > 255)
 	{
 		if (dynamicColorFactor > FACTOR_MINIMUM)
 		{
@@ -94,7 +100,7 @@ static void calculateDynamicDim( void )
 	else
 	{
 		/* Dark values are no problem for long terms */
-		dynamicColorFactor = NO_CHANGE_FACGOR;
+		dynamicColorFactor = NO_CHANGE_FACTOR;
 	}
 	
 }
@@ -213,7 +219,7 @@ boblightThread(void *arg)
 		loggingOutput--;
 		if (loggingOutput <= 0)
 		{
-			usbcdc_print("%s at %s Version:%s\tAlive-Mailbox: %2d Dim factor: %d%\r\n", __DATE__, __TIME__,BOBLIGHT_VERSION, chCoreStatus(), chMBGetUsedCountI(gBoblightMailbox), (int)(100*dynamicColorFactor));
+			usbcdc_print("%s at %s Version:%s\tAlive-Mailbox: %2d Dim factor: %d% |sum|=%d |red|=%d |green|=%d |blue|=%d\r\n", __DATE__, __TIME__,BOBLIGHT_VERSION, chMBGetUsedCountI(gBoblightMailbox), dynamicColorFactor, meanSum, meanRed, meanGreen, meanBlue);
 			loggingOutput=LOGGING_FACTOR;
 		}
 
