@@ -18,6 +18,7 @@
 
 #include "hal.h"
 
+#define LEDSTRIPE_COLOR_MAXVALUE  255
 
 //enter number of LEDs here!
 #define LEDSTRIPE_FRAMEBUFFER_SIZE 240

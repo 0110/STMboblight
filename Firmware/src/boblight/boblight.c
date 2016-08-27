@@ -41,6 +41,10 @@
 
 #define LOGGING_FACTOR		10
 
+#define NO_CHANGE_FACGOR	1.0f
+#define FACTOR_DECREASE_STEP	0.001f
+#define FACTOR_MINIMUM		0.33f
+
 /******************************************************************************
  * LOCAL VARIABLES for this module
  ******************************************************************************/
@@ -51,6 +55,7 @@ static int ledOffset = 0;
 static int startFound = FALSE;
 
 static int colorPosition=0;
+static float dynamicColorFactor=0;
 
 uint32_t*	gBoblightMailboxBuffer = NULL;
 Mailbox *	gBoblightMailbox = NULL;
@@ -58,6 +63,41 @@ Mailbox *	gBoblightMailbox = NULL;
 /******************************************************************************
  * LOCAL FUNCTIONS for this module
  ******************************************************************************/
+
+/** Secure, that the leds are not oo bright for a long time */
+static void calculateDynamicDim( void )
+{
+	long sumRed=0;
+	long sumGreen=0;
+	long sumBlue=0;
+	int i;
+	for(i=0; i < ledOffset; i++)
+	{
+		sumRed += ledstripe_framebuffer[i].red;
+		sumGreen += ledstripe_framebuffer[i].green;
+		sumBlue += ledstripe_framebuffer[i].blue;
+	}
+	
+	/* Get the mean brighntess per color */
+	int meanRed = (int) (sumRed / ledOffset);
+	int meanGreen = (int) (sumGreen / ledOffset);
+	int meanBlue = (int) (sumBlue / ledOffset);
+
+	if ( (meanRed + meanGreen + meanBlue ) > LEDSTRIPE_COLOR_MAXVALUE)
+	{
+		if (dynamicColorFactor > FACTOR_MINIMUM)
+		{
+			/* Color is too bright for longer periods */
+			dynamicColorFactor -= FACTOR_DECREASE_STEP;
+		}
+	}
+	else
+	{
+		/* Dark values are no problem for long terms */
+		dynamicColorFactor = NO_CHANGE_FACGOR;
+	}
+	
+}
 
 static int readDirectWS2812cmd(char *textbuffer)
 {
@@ -70,6 +110,7 @@ static int readDirectWS2812cmd(char *textbuffer)
 			/** Handle Frame beginning */
 			if (textbuffer[i] == 'A' && textbuffer[i+1] == 'd' && textbuffer[i+2] == 'a')
 			{
+				calculateDynamicDim();
 				channelSize = textbuffer[i+3] * 256 + textbuffer[i+4];
 				i=i+5;
 				ledOffset=0;
@@ -172,7 +213,7 @@ boblightThread(void *arg)
 		loggingOutput--;
 		if (loggingOutput <= 0)
 		{
-			usbcdc_print("%s at %s Version:%s\tAlive-Mailbox: %2d\r\n", __DATE__, __TIME__,BOBLIGHT_VERSION, chCoreStatus(), chMBGetUsedCountI(gBoblightMailbox));
+			usbcdc_print("%s at %s Version:%s\tAlive-Mailbox: %2d Dim factor: %d%\r\n", __DATE__, __TIME__,BOBLIGHT_VERSION, chCoreStatus(), chMBGetUsedCountI(gBoblightMailbox), (int)(100*dynamicColorFactor));
 			loggingOutput=LOGGING_FACTOR;
 		}
 

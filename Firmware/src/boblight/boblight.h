@@ -10,7 +10,7 @@
 
 #include "ch.h"
 
-#define BOBLIGHT_VERSION 	"1.0"
+#define BOBLIGHT_VERSION 	"1.1"
 
 /**
  * @var gBoblightMailboxBuffer
