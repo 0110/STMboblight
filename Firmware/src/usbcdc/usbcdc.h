@@ -107,6 +107,12 @@ int usbcdc_readAll(char *pText, int bufferLeng);
  */
 int usbcdc_read(char *pText, int bufferLeng);
 
+/** @fn void usbcdc_putMemory(uint8_t *text, unsigned int length);
+ * æparam[in] text	Memory area with ASCII data
+ * @param[in] length	Amount of bytes in the memory, that should be sent via USB UART
+ */
+void usbcdc_putMemory(uint8_t *text, unsigned int length);
+
 #ifdef __cplusplus
 }
 #endif
