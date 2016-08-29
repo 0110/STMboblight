@@ -42,10 +42,10 @@
 #define LOGGING_FACTOR		2
 
 /** Constants for the dynamic dimming */
-#define NO_CHANGE_FACTOR	1000	/**< No change, so it is set to 1000 promill */
+#define FACTOR_DEFAULT	1000	/**< No change, so it is set to 1000 promill */
 #define FACTOR_DECREASE_STEP	1	/**< Decrease the amount in each cycle by 1 promill */
 #define FACTOR_MINIMUM		330	/**< As one color can be easily at full brightness, 330 promill is the minimum */
-
+#define FACTOR_INCREASE_STEP	2	/**< Increasing amount in each cycle */
 /******************************************************************************
  * LOCAL VARIABLES for this module
  ******************************************************************************/
@@ -56,7 +56,7 @@ static int ledOffset = 0;
 static int startFound = FALSE;
 
 static int colorPosition=0;
-static int dynamicColorFactor=0;
+static int dynamicColorFactor= FACTOR_DEFAULT;
 /** DEBUG */
 static uint32_t meanSum = 0;
 static uint32_t meanRed = 0;
@@ -100,7 +100,14 @@ static void calculateDynamicDim( void )
 	else
 	{
 		/* Dark values are no problem for long terms */
-		dynamicColorFactor = NO_CHANGE_FACTOR;
+		if (dynamicColorFactor < FACTOR_DEFAULT)
+		{
+			dynamicColorFactor += FACTOR_INCREASE_STEP;
+		}
+		else
+		{
+			dynamicColorFactor = FACTOR_DEFAULT;
+		}
 	}
 	
 }
@@ -131,13 +138,13 @@ static int readDirectWS2812cmd(char *textbuffer)
 					switch(colorPosition)
 					{
 					case COLOR_RED:
-						ledstripe_framebuffer[ledOffset].red = 		(uint8_t) textbuffer[i];
+						ledstripe_framebuffer[ledOffset].red = 		(uint8_t) ((textbuffer[i] * dynamicColorFactor) / FACTOR_DEFAULT);
 						break;
 					case COLOR_GREEN:
-						ledstripe_framebuffer[ledOffset].green = 	(uint8_t) textbuffer[i];
+						ledstripe_framebuffer[ledOffset].green = 	(uint8_t) ((textbuffer[i] * dynamicColorFactor) / FACTOR_DEFAULT);
 						break;
 					case COLOR_BLUE:
-						ledstripe_framebuffer[ledOffset].blue = 	(uint8_t) textbuffer[i];
+						ledstripe_framebuffer[ledOffset].blue = 	(uint8_t) ((textbuffer[i] * dynamicColorFactor) / FACTOR_DEFAULT);
 						/* Reset for the next LED */
 						colorPosition = COLOR_RESET;
 						ledOffset++;
