@@ -109,13 +109,13 @@ distanceThread(void *arg)
 		mTrigTime=0U;
 		palClearPad(GPIOA, GPIOA_HCSR04_TRIG);
 
-		/* 2 measurements per second */
-		chThdSleepMilliseconds(500);
+		/* one measurements per second */
+		chThdSleepMilliseconds(1000);
 
 		/* Check, if we received something */
 		if (mTrigTime > 0) {
 			duration = ST2US(mTrigTime - time);
-			DEBUG_PRINT("Duration: %d, start time %5d pulse %5d\r\n", duration, time, mTrigTime);
+			DEBUG_PRINT("Duration: %5d us Distance %5d cm\r\n", duration, (duration/58));
 		}
 	}
 
@@ -133,6 +133,8 @@ void hcsr04_init(void)
 	 * Activates the EXT driver 1.
 	 */
 	extStart(&EXTD1, &extcfg);
+
+	palClearPad(GPIOA, GPIOA_HCSR04_TRIG);
 
 	DEBUG_PRINT("Start distance thread ...");
 	  chThdCreateStatic(waDistanceThread, sizeof(waDistanceThread), NORMALPRIO,
