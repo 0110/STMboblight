@@ -14,6 +14,8 @@ Control WS2812 LEDs from a  STM32F4 Discovery board. The Commands are set from a
     * GND is also connected with the WS2812
     * 5V power supply, can be the same as for the WS2812
     * USB-Connecten for the USB serial
+    * PA2 HC-SR04 distance module trigger output (distance measurement started)
+    * PA3 HC-SR04 distance module echo input     (distance measurement signal)
   * LED interface
     * Green LED blinking : Board running
     * Red LED : nothing new on the USB-UART

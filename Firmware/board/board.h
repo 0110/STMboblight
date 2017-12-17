@@ -58,9 +58,9 @@
  * IO pins assignments.
  */
 #define GPIOA_BUTTON                0
-#define GPIOA_BTNRPM1                  1
-#define GPIOA_PIN2                  2
-#define GPIOA_PIN3                  3
+#define GPIOA_BTNRPM1               1
+#define GPIOA_HCSR04_TRIG           2
+#define GPIOA_HCSR04_ECHO           3
 #define GPIOA_LRCK                  4
 #define GPIOA_SPC                   5
 #define GPIOA_SDO                   6
@@ -237,8 +237,8 @@
  *
  * PA0  - BUTTON                    (input floating).
  * PA1  - GPIOA_BTNRPM1             (input pulldown).
- * PA2  - PIN2                      (input pullup).
- * PA3  - PIN3                      (input pullup).
+ * PA2  - HC-SR04 echo              (output pullup).
+ * PA3  - HC-SR03 trigger           (input floating).
  * PA4  - LRCK                      (alternate 6).
  * PA5  - SPC                       (alternate 5).
  * PA6  - SDO                       (alternate 5).
@@ -253,9 +253,9 @@
  * PA15 - PIN15                     (input pullup).
  */
 #define VAL_GPIOA_MODER             (PIN_MODE_INPUT(GPIOA_BUTTON) |         \
-                                     PIN_MODE_INPUT(GPIOA_BTNRPM1) |           \
-                                     PIN_MODE_INPUT(GPIOA_PIN2) |           \
-                                     PIN_MODE_INPUT(GPIOA_PIN3) |           \
+                                     PIN_MODE_INPUT(GPIOA_BTNRPM1) |        \
+                                     PIN_MODE_OUTPUT(GPIOA_HCSR04_ECHO) |    \
+                                     PIN_MODE_INPUT(GPIOA_HCSR04_TRIG) |    \
                                      PIN_MODE_ALTERNATE(GPIOA_LRCK) |       \
                                      PIN_MODE_ALTERNATE(GPIOA_SPC) |        \
                                      PIN_MODE_ALTERNATE(GPIOA_SDO) |        \
@@ -270,8 +270,8 @@
                                      PIN_MODE_INPUT(GPIOA_PIN15))
 #define VAL_GPIOA_OTYPER            (PIN_OTYPE_PUSHPULL(GPIOA_BUTTON) |     \
                                      PIN_OTYPE_PUSHPULL(GPIOA_BTNRPM1) |       \
-                                     PIN_OTYPE_PUSHPULL(GPIOA_PIN2) |       \
-                                     PIN_OTYPE_PUSHPULL(GPIOA_PIN3) |       \
+                                     PIN_OTYPE_PUSHPULL(GPIOA_HCSR04_ECHO) | \
+                                     PIN_OTYPE_PUSHPULL(GPIOA_HCSR04_TRIG) | \
                                      PIN_OTYPE_PUSHPULL(GPIOA_LRCK) |       \
                                      PIN_OTYPE_PUSHPULL(GPIOA_SPC) |        \
                                      PIN_OTYPE_PUSHPULL(GPIOA_SDO) |        \
@@ -286,8 +286,8 @@
                                      PIN_OTYPE_PUSHPULL(GPIOA_PIN15))
 #define VAL_GPIOA_OSPEEDR           (PIN_OSPEED_100M(GPIOA_BUTTON) |        \
                                      PIN_OSPEED_100M(GPIOA_BTNRPM1) |          \
-                                     PIN_OSPEED_100M(GPIOA_PIN2) |          \
-                                     PIN_OSPEED_100M(GPIOA_PIN3) |          \
+                                     PIN_OSPEED_100M(GPIOA_HCSR04_ECHO) | \
+                                     PIN_OSPEED_100M(GPIOA_HCSR04_TRIG) | \
                                      PIN_OSPEED_100M(GPIOA_LRCK) |          \
                                      PIN_OSPEED_50M(GPIOA_SPC) |            \
                                      PIN_OSPEED_50M(GPIOA_SDO) |            \
@@ -301,9 +301,9 @@
                                      PIN_OSPEED_100M(GPIOA_SWCLK) |         \
                                      PIN_OSPEED_100M(GPIOA_PIN15))
 #define VAL_GPIOA_PUPDR             (PIN_PUPDR_FLOATING(GPIOA_BUTTON) |     \
-                                     PIN_PUPDR_PULLDOWN(GPIOA_BTNRPM1) |         \
-                                     PIN_PUPDR_PULLUP(GPIOA_PIN2) |         \
-                                     PIN_PUPDR_PULLUP(GPIOA_PIN3) |         \
+                                     PIN_PUPDR_PULLDOWN(GPIOA_BTNRPM1) |     \
+                                     PIN_PUPDR_PULLUP(GPIOA_HCSR04_ECHO) |   \
+                                     PIN_PUPDR_FLOATING(GPIOA_HCSR04_TRIG) | \
                                      PIN_PUPDR_FLOATING(GPIOA_LRCK) |       \
                                      PIN_PUPDR_FLOATING(GPIOA_SPC) |        \
                                      PIN_PUPDR_FLOATING(GPIOA_SDO) |        \
@@ -318,8 +318,8 @@
                                      PIN_PUPDR_PULLUP(GPIOA_PIN15))
 #define VAL_GPIOA_ODR               (PIN_ODR_HIGH(GPIOA_BUTTON) |           \
                                      PIN_ODR_HIGH(GPIOA_BTNRPM1) |             \
-                                     PIN_ODR_HIGH(GPIOA_PIN2) |             \
-                                     PIN_ODR_HIGH(GPIOA_PIN3) |             \
+                                     PIN_ODR_HIGH(GPIOA_HCSR04_ECHO) |      \
+                                     PIN_ODR_HIGH(GPIOA_HCSR04_TRIG) |      \
                                      PIN_ODR_HIGH(GPIOA_LRCK) |             \
                                      PIN_ODR_HIGH(GPIOA_SPC) |              \
                                      PIN_ODR_HIGH(GPIOA_SDO) |              \
@@ -334,8 +334,8 @@
                                      PIN_ODR_HIGH(GPIOA_PIN15))
 #define VAL_GPIOA_AFRL              (PIN_AFIO_AF(GPIOA_BUTTON, 0) |         \
                                      PIN_AFIO_AF(GPIOA_BTNRPM1, 0) |           \
-                                     PIN_AFIO_AF(GPIOA_PIN2, 0) |           \
-                                     PIN_AFIO_AF(GPIOA_PIN3, 0) |           \
+                                     PIN_AFIO_AF(GPIOA_HCSR04_ECHO, 0) |    \
+                                     PIN_AFIO_AF(GPIOA_HCSR04_TRIG, 0) |    \
                                      PIN_AFIO_AF(GPIOA_LRCK, 6) |           \
                                      PIN_AFIO_AF(GPIOA_SPC, 5) |            \
                                      PIN_AFIO_AF(GPIOA_SDO, 5) |            \
