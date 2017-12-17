@@ -20,7 +20,7 @@
 #include "cmd/cmd.h"
 #include "ledstripe/ledstripe.h"
 #include "boblight/boblight.h"
-
+#include "distsensor/hc-sr04.h"
 
 
 /******************************************************************************
@@ -133,6 +133,9 @@ main(void)
 
   /* Start the Thread reading commands from the USB serial device */
   boblight_init();
+
+  /* Start the Thread handling the distance sensor */
+  hcsr04_init();
 
   shellCreate(&shell_cfg1, SHELL_WA_SIZE, NORMALPRIO);
 

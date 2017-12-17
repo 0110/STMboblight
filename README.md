@@ -20,7 +20,9 @@ Control WS2812 LEDs from a  STM32F4 Discovery board. The Commands are set from a
     * Green LED blinking : Board running
     * Red LED : nothing new on the USB-UART
     * Blue LED : WS2812 LEDs updated with new information
-
+  * Serial command and control interface
+    * PC6 UART TX
+    * PC7 UART RX
 ### Software
 
 * [Boblight](https://code.google.com/p/boblight/)
