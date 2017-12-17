@@ -44,10 +44,10 @@ static systime_t mTrigTime = 0U;
 
 static const EXTConfig extcfg = {
   {
-    {EXT_CH_MODE_RISING_EDGE | EXT_CH_MODE_AUTOSTART | EXT_MODE_GPIOA, extcb1},
     {EXT_CH_MODE_DISABLED, NULL},
     {EXT_CH_MODE_DISABLED, NULL},
     {EXT_CH_MODE_DISABLED, NULL},
+    {EXT_CH_MODE_BOTH_EDGES | EXT_CH_MODE_AUTOSTART | EXT_MODE_GPIOA, extcb1},
     {EXT_CH_MODE_DISABLED, NULL},
     {EXT_CH_MODE_DISABLED, NULL},
     {EXT_CH_MODE_DISABLED, NULL},
@@ -78,9 +78,7 @@ static void extcb1(EXTDriver *extp, expchannel_t channel) {
 	(void)extp;
 	(void)channel;
 
-	chSysLockFromIsr();
 	mTrigTime = chTimeNow();
-	chSysUnlockFromIsr();
 }
 
 static msg_t
@@ -93,14 +91,14 @@ distanceThread(void *arg)
 
 
 	while (TRUE) {
-		extChannelDisable(&EXTD1, 0);
-		mTrigTime=0U;
+		extChannelDisable(&EXTD1, 3);
 		/* According to the datasheet a high level of 10us is required */
 		palSetPad(GPIOA, GPIOA_HCSR04_TRIG);
 		chThdSleepMicroseconds(10);
-		palClearPad(GPIOA, GPIOA_HCSR04_TRIG);
 		time = chTimeNow();
-	    extChannelEnable(&EXTD1, 0);
+		mTrigTime=0U;
+		palClearPad(GPIOA, GPIOA_HCSR04_TRIG);
+	    extChannelEnable(&EXTD1, 3);
 
 		/* each two seconds one measurement */
 		chThdSleepMilliseconds(2000);
@@ -108,7 +106,7 @@ distanceThread(void *arg)
 		/* Check, if we received something */
 		if (mTrigTime > 0) {
 			duration = ST2US(mTrigTime - time);
-			DEBUG_PRINT("Duration: %d\r\n", duration);
+			DEBUG_PRINT("Duration: %d, start time %5d pulse %5d\r\n", duration, time, mTrigTime);
 		}
 	}
 
