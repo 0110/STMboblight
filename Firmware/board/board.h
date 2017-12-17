@@ -319,7 +319,7 @@
 #define VAL_GPIOA_ODR               (PIN_ODR_HIGH(GPIOA_BUTTON) |           \
                                      PIN_ODR_HIGH(GPIOA_BTNRPM1) |          \
                                      PIN_ODR_LOW(GPIOA_HCSR04_TRIG) |       \
-                                     PIN_ODR_HIGH(GPIOA_HCSR04_ECHO) |      \
+                                     PIN_ODR_LOW(GPIOA_HCSR04_ECHO) |      \
                                      PIN_ODR_HIGH(GPIOA_LRCK) |             \
                                      PIN_ODR_HIGH(GPIOA_SPC) |              \
                                      PIN_ODR_HIGH(GPIOA_SDO) |              \
