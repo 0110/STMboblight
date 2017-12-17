@@ -79,10 +79,7 @@ static void extcb1(EXTDriver *extp, expchannel_t channel) {
 	(void)channel;
 
 	chSysLockFromIsr();
-	/* Store the time, when an interrupt occured */
-	if (palReadPad(GPIOA, GPIOA_HCSR04_ECHO)) {
-		mTrigTime = chTimeNow();
-	}
+	mTrigTime = chTimeNow();
 	chSysUnlockFromIsr();
 }
 
@@ -105,8 +102,8 @@ distanceThread(void *arg)
 		time = chTimeNow();
 	    extChannelEnable(&EXTD1, 0);
 
-		/* each half second one measurement */
-		chThdSleepMilliseconds(500);
+		/* each two seconds one measurement */
+		chThdSleepMilliseconds(2000);
 
 		/* Check, if we received something */
 		if (mTrigTime > 0) {
