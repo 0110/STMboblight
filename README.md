@@ -8,6 +8,14 @@ Control WS2812 LEDs from a  STM32F4 Discovery board. The Commands are set from a
 
 * PC / Raspberry to run boblight e.g. in combination with [Kodi](kodi.tv)
 * WS2812 LEDs
+ * 5V
+ * DIN
+ * GND
+* HC-SR04
+ * 3V
+ * TRIG
+ * ECHO
+ * GND
 * STM32F4 Discovery board
   * Hardware interface
     * PB0 is connected with the data input of the first WS2812
@@ -15,7 +23,7 @@ Control WS2812 LEDs from a  STM32F4 Discovery board. The Commands are set from a
     * 5V power supply, can be the same as for the WS2812
     * USB-Connecten for the USB serial
     * PA2 HC-SR04 distance module trigger output (distance measurement started)
-    * PA3 HC-SR04 distance module echo input     (distance measurement signal)
+    * PA3 HC-SR04 distance module echo input     (distance measurement signal); included 1k resistor in this line
   * LED interface
     * Green LED blinking : Board running
     * Red LED : nothing new on the USB-UART
