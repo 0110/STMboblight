@@ -25,8 +25,18 @@
 
 #define DEBUG_PRINT( ... )	chprintf((BaseSequentialStream *) &SD6, __VA_ARGS__);/**< Uart print */
 
-#define ST2US(st)                                                         \
-  ((systime_t) (((((uint32_t)(st)) - 1UL) * 1000000UL) + 1UL) / ((uint32_t)CH_FREQUENCY) )
+
+/** (Backported from Chibios 3.0)
+ * @brief   System ticks to microseconds.
+ * @details Converts from system ticks number to microseconds.
+ * @note    The result is rounded up to the next microsecond boundary.
+ *
+ * @param[in] n         number of system ticks
+ * @return              The number of microseconds.
+ *
+ * @api
+ */
+#define ST2US(n) ((((n) - 1UL) / (CH_FREQUENCY / 1000000UL)) + 1UL)
 
 #define HCSR04_MEASUREMENT_INTERVALL	500000 /* in us */
 
@@ -47,7 +57,7 @@ static const EXTConfig extcfg = {
     {EXT_CH_MODE_DISABLED, NULL},
     {EXT_CH_MODE_DISABLED, NULL},
     {EXT_CH_MODE_DISABLED, NULL},
-    {EXT_CH_MODE_BOTH_EDGES | EXT_CH_MODE_AUTOSTART | EXT_MODE_GPIOA, extcb1},
+    {EXT_CH_MODE_RISING_EDGE | EXT_MODE_GPIOA, extcb1},
     {EXT_CH_MODE_DISABLED, NULL},
     {EXT_CH_MODE_DISABLED, NULL},
     {EXT_CH_MODE_DISABLED, NULL},
@@ -90,18 +100,17 @@ distanceThread(void *arg)
 	chRegSetThreadName("distsensor");
 
 
+    extChannelEnable(&EXTD1, 3);
 	while (TRUE) {
-		extChannelDisable(&EXTD1, 3);
 		/* According to the datasheet a high level of 10us is required */
 		palSetPad(GPIOA, GPIOA_HCSR04_TRIG);
 		chThdSleepMicroseconds(10);
 		time = chTimeNow();
 		mTrigTime=0U;
 		palClearPad(GPIOA, GPIOA_HCSR04_TRIG);
-	    extChannelEnable(&EXTD1, 3);
 
-		/* each two seconds one measurement */
-		chThdSleepMilliseconds(2000);
+		/* 2 measurements per second */
+		chThdSleepMilliseconds(500);
 
 		/* Check, if we received something */
 		if (mTrigTime > 0) {
@@ -110,6 +119,7 @@ distanceThread(void *arg)
 		}
 	}
 
+	extChannelDisable(&EXTD1, 3);
 	return RDY_OK;
 }
 
