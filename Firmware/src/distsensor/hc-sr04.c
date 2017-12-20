@@ -103,11 +103,11 @@ distanceThread(void *arg)
     extChannelEnable(&EXTD1, 3);
 	while (TRUE) {
 		/* According to the datasheet a high level of 10us is required */
-		palSetPad(GPIOA, GPIOA_HCSR04_TRIG);
-		chThdSleepMicroseconds(10);
+		palClearPad(GPIOA, GPIOA_HCSR04_TRIG);
+		chThdSleepMilliseconds(10);
 		time = chTimeNow();
 		mTrigTime=0U;
-		palClearPad(GPIOA, GPIOA_HCSR04_TRIG);
+		palSetPad(GPIOA, GPIOA_HCSR04_TRIG);
 
 		/* one measurements per second */
 		chThdSleepMilliseconds(1000);
