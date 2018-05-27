@@ -2,6 +2,7 @@
 APPSRC = src/main.c \
 		src/usbcdc/usbcdc.c \
 		src/ledstripe/ledstripe.c \
+		src/boblight/crc32.c \
 		src/boblight/boblight.c \
 		src/cmd/cmd_threads.c \
 		src/cmd/cmd_ledstripe.c \
