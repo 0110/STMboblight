@@ -48,7 +48,7 @@
 #define FACTOR_MINIMUM		330	/**< As one color can be easily at full brightness, 330 promill is the minimum */
 #define FACTOR_INCREASE_STEP	2	/**< Increasing amount in each cycle */
 
-#define FACTOR_DECREASE_SAME_STEP    10   /**< Decrease at same color the amount in each cycle by 1 promill */
+#define FACTOR_DECREASE_SAME_STEP    3   /**< Decrease at same color the amount in each cycle by 1 promill */
 #define ALLOWED_SAME_COLOR      100  /**< cycles, the same color can be shown */
 
 /******************************************************************************
@@ -127,16 +127,13 @@ static void calculateDynamicDim( void )
 	        sameColorCounter++;
 	    }
 	}
-	else if (sameColorCounter > 0) {
-	    /* decreasing same color */
-	    sameColorCounter = 0U;
-	}
 	else
 	{
         if (dynamicColorFactor < FACTOR_MINIMUM) {
             /* reset */
             sameColorCounter = 0U;
             crc = 0U;
+            dynamicColorFactor = FACTOR_MINIMUM;
         } else if (dynamicColorFactor < FACTOR_DEFAULT)
         /* Dark values are no problem for long terms */
 		{
