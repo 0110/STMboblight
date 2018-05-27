@@ -48,7 +48,8 @@
 #define FACTOR_MINIMUM		330	/**< As one color can be easily at full brightness, 330 promill is the minimum */
 #define FACTOR_INCREASE_STEP	2	/**< Increasing amount in each cycle */
 
-#define ALLOWED_SAME_COLOR      1000  /**< cycles, the same color can be shown */
+#define FACTOR_DECREASE_SAME_STEP    10   /**< Decrease at same color the amount in each cycle by 1 promill */
+#define ALLOWED_SAME_COLOR      100  /**< cycles, the same color can be shown */
 
 /******************************************************************************
  * LOCAL VARIABLES for this module
@@ -99,6 +100,7 @@ static void calculateDynamicDim( void )
 	meanGreen = (sumGreen / ledOffset);
 	meanBlue =  (sumBlue / ledOffset);
 	meanSum = (meanRed + meanGreen + meanBlue);
+	/* Handle too bright LEDs */
 	if (meanSum > 255)
 	{
 		if (dynamicColorFactor > FACTOR_MINIMUM)
@@ -108,30 +110,32 @@ static void calculateDynamicDim( void )
 		}
 	}
 	else if (crc == oldCRCvalue) {
-	    if ((sameColorCounter > ALLOWED_SAME_COLOR) &&
-	            (dynamicColorFactor > 0)) {
+	    if (sameColorCounter > ALLOWED_SAME_COLOR) {
 	        /* Same color for longer period... dim the lights down */
-	        if (dynamicColorFactor > FACTOR_DECREASE_STEP) {
-	            dynamicColorFactor -= FACTOR_DECREASE_STEP;
-	        } else {
+	        if (dynamicColorFactor > FACTOR_DECREASE_SAME_STEP) {
+	            dynamicColorFactor -= FACTOR_DECREASE_SAME_STEP;
+	        } else if (dynamicColorFactor <= FACTOR_DECREASE_SAME_STEP){
 	            dynamicColorFactor = 0;
 	        }
+
             /* reset counter */
-            sameColorCounter = 0U;
+            sameColorCounter = 1U;
 	    } else {
 	        sameColorCounter++;
 	    }
 	}
+	else if (sameColorCounter > 0) {
+	    /* decreasing same color */
+	    sameColorCounter = 0U;
+	}
 	else
 	{
-
         if (dynamicColorFactor < FACTOR_MINIMUM) {
             /* reset */
             sameColorCounter = 0U;
             crc = 0U;
-        } else
-		/* Dark values are no problem for long terms */
-		if (dynamicColorFactor < FACTOR_DEFAULT)
+        } else if (dynamicColorFactor < FACTOR_DEFAULT)
+        /* Dark values are no problem for long terms */
 		{
 			dynamicColorFactor += FACTOR_INCREASE_STEP;
 		}
@@ -259,7 +263,7 @@ boblightThread(void *arg)
 		loggingOutput--;
 		if (loggingOutput <= 0)
 		{
-			usbcdc_print("%s at %s Version:%s\tAlive-Mailbox: %2d Dim factor: %d% |sum|=%d |red|=%d |green|=%d |blue|=%d\r\n", __DATE__, __TIME__,BOBLIGHT_VERSION, chMBGetUsedCountI(gBoblightMailbox), dynamicColorFactor, meanSum, meanRed, meanGreen, meanBlue);
+			usbcdc_print("%s at %s Version:%s\tAlive-Mailbox: %2d Dim factor: %d% |crc| = %x,%d |sum|=%d |red|=%d |green|=%d |blue|=%d\r\n", __DATE__, __TIME__,BOBLIGHT_VERSION, chMBGetUsedCountI(gBoblightMailbox), dynamicColorFactor, oldCRCvalue, sameColorCounter, meanSum, meanRed, meanGreen, meanBlue);
 			loggingOutput=LOGGING_FACTOR;
 		}
 
