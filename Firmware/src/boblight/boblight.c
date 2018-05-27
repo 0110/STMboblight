@@ -6,6 +6,7 @@
  */
 
 #include "boblight.h"
+#include "crc32.h"
 
 #include "usbcdc/usbcdc.h"
 #include "ledstripe/ledstripe.h"
@@ -46,6 +47,9 @@
 #define FACTOR_DECREASE_STEP	1	/**< Decrease the amount in each cycle by 1 promill */
 #define FACTOR_MINIMUM		330	/**< As one color can be easily at full brightness, 330 promill is the minimum */
 #define FACTOR_INCREASE_STEP	2	/**< Increasing amount in each cycle */
+
+#define ALLOWED_SAME_COLOR      1000  /**< cycles, the same color can be shown */
+
 /******************************************************************************
  * LOCAL VARIABLES for this module
  ******************************************************************************/
@@ -66,6 +70,9 @@ static uint32_t meanBlue = 0;
 uint32_t*	gBoblightMailboxBuffer = NULL;
 Mailbox *	gBoblightMailbox = NULL;
 
+static uint32_t oldCRCvalue         = 0U;
+static uint32_t sameColorCounter    = 0U;
+
 /******************************************************************************
  * LOCAL FUNCTIONS for this module
  ******************************************************************************/
@@ -76,6 +83,7 @@ static void calculateDynamicDim( void )
 	uint32_t sumRed=0;
 	uint32_t sumGreen=0;
 	uint32_t sumBlue=0;
+	uint32_t crc = 0;
 	int i;
 	for(i=0; i < ledOffset; i++)
 	{
@@ -83,7 +91,9 @@ static void calculateDynamicDim( void )
 		sumGreen += ledstripe_framebuffer[i].green;
 		sumBlue += ledstripe_framebuffer[i].blue;
 	}
-	
+
+	crc = crc32((uint8_t *) &ledstripe_framebuffer, sizeof(ledstripe_framebuffer));
+
 	/* Get the mean brighntess per color */
 	meanRed =   (sumRed / ledOffset);
 	meanGreen = (sumGreen / ledOffset);
@@ -97,8 +107,29 @@ static void calculateDynamicDim( void )
 			dynamicColorFactor -= FACTOR_DECREASE_STEP;
 		}
 	}
+	else if (crc == oldCRCvalue) {
+	    if ((sameColorCounter > ALLOWED_SAME_COLOR) &&
+	            (dynamicColorFactor > 0)) {
+	        /* Same color for longer period... dim the lights down */
+	        if (dynamicColorFactor > FACTOR_DECREASE_STEP) {
+	            dynamicColorFactor -= FACTOR_DECREASE_STEP;
+	        } else {
+	            dynamicColorFactor = 0;
+	        }
+            /* reset counter */
+            sameColorCounter = 0U;
+	    } else {
+	        sameColorCounter++;
+	    }
+	}
 	else
 	{
+
+        if (dynamicColorFactor < FACTOR_MINIMUM) {
+            /* reset */
+            sameColorCounter = 0U;
+            crc = 0U;
+        } else
 		/* Dark values are no problem for long terms */
 		if (dynamicColorFactor < FACTOR_DEFAULT)
 		{
@@ -109,7 +140,9 @@ static void calculateDynamicDim( void )
 			dynamicColorFactor = FACTOR_DEFAULT;
 		}
 	}
-	
+
+	/* remember the CRC value for the next cycle */
+	oldCRCvalue = crc;
 }
 
 static int readDirectWS2812cmd(char *textbuffer)
