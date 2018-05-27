@@ -13,6 +13,7 @@
 #include "ledstripe/ledstripe.h"
 
 ledstripe_color ledstripe_framebuffer[LEDSTRIPE_FRAMEBUFFER_SIZE];
+
 uint16_t ledstripe_pwm_buffer[LEDSTRIPE_PWM_BUFFER_SIZE];
 static uint16_t frame_pos = 0;
 
@@ -116,7 +117,7 @@ void ledstripe_init(GPIO_TypeDef *port, int pin) {
 
 	//DEBUG: Set an default value (as DMA is not working)
 	STM32_TIM3->CCR[2] = 0;
-	
+
 
 	/******************** DMA *****************************/
 	dmaInit();

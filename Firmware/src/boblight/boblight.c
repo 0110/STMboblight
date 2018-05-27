@@ -62,6 +62,9 @@ static int startFound = FALSE;
 
 static int colorPosition=0;
 static int dynamicColorFactor= FACTOR_DEFAULT;
+
+static ledstripe_color ledstripe_inputbuffer[LEDSTRIPE_FRAMEBUFFER_SIZE]; /**< Without any modification */
+
 /** DEBUG */
 static uint32_t meanSum = 0;
 static uint32_t meanRed = 0;
@@ -93,7 +96,7 @@ static void calculateDynamicDim( void )
 		sumBlue += ledstripe_framebuffer[i].blue;
 	}
 
-	crc = crc32((uint8_t *) &ledstripe_framebuffer, sizeof(ledstripe_framebuffer));
+	crc = crc32((uint8_t *) &ledstripe_inputbuffer, sizeof(ledstripe_inputbuffer));
 
 	/* Get the mean brighntess per color */
 	meanRed =   (sumRed / ledOffset);
@@ -176,12 +179,15 @@ static int readDirectWS2812cmd(char *textbuffer)
 					{
 					case COLOR_RED:
 						ledstripe_framebuffer[ledOffset].red = 		(uint8_t) ((textbuffer[i] * dynamicColorFactor) / FACTOR_DEFAULT);
+						ledstripe_inputbuffer[ledOffset].red =      (uint8_t) (textbuffer[i]);
 						break;
 					case COLOR_GREEN:
 						ledstripe_framebuffer[ledOffset].green = 	(uint8_t) ((textbuffer[i] * dynamicColorFactor) / FACTOR_DEFAULT);
+						ledstripe_inputbuffer[ledOffset].green =      (uint8_t) (textbuffer[i]);
 						break;
 					case COLOR_BLUE:
 						ledstripe_framebuffer[ledOffset].blue = 	(uint8_t) ((textbuffer[i] * dynamicColorFactor) / FACTOR_DEFAULT);
+						ledstripe_inputbuffer[ledOffset].blue =      (uint8_t) (textbuffer[i]);
 						/* Reset for the next LED */
 						colorPosition = COLOR_RESET;
 						ledOffset++;
